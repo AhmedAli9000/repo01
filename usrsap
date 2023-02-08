@@ -15,4 +15,4 @@ mount /dev/vg_usr_sap/lv_usr_sap /usr_sap
 mount -a
 
 OUTPUT="$(sudo blkid -s UUID -o value /dev/mapper/vg_usr_sap-lv_usr_sap$partnumber)"
-echo "UUID="$OUTPUT"    /usr_sap    xfs    defaults    0    0" | sudo tee -a /etc/fstab
+echo "UUID="$OUTPUT"    /usr_sap    xfs    defaults    0    0" | sudo tee -a /etc/fstab"
