@@ -13,10 +13,11 @@ function Write-Log {
 }
 #Run Sysprep
 try{
+# Hashed the below to make it manually to avoid custom script issues.
     write-output "Sysprep Starting"
     # Start-Process -filepath 'c:\Windows\system32\sysprep\sysprep.exe' -ErrorAction Stop -ArgumentList '/generalize', '/oobe', '/mode:vm', '/shutdown'
     # Start-Process -filepath 'c:\Windows\system32\sysprep\sysprep.exe' -ErrorAction Stop -ArgumentList '/generalize', '/oobe', '/shutdown'
-    C:\Windows\System32\sysprep\sysprep.exe /oobe /generalize /shutdown
+    # C:\Windows\System32\sysprep\sysprep.exe /oobe /generalize /shutdown
 }
 catch {
     $ErrorMessage = $_.Exception.message
