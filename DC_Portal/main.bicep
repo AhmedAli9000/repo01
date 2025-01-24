@@ -187,7 +187,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-08-01' = {
       imageReference: {
         publisher: 'MicrosoftWindowsServer'
         offer: 'WindowsServer'
-        sku: '2019-Datacenter'
+        sku: WindowsServerSKU
         version: 'latest'
       }
       osDisk: {
