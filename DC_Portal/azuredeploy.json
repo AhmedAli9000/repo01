@@ -83,27 +83,6 @@
         "description": "Virtual network address range."
       }
     },
-    "loadBalancerFrontEndIPName": {
-      "type": "string",
-      "defaultValue": "LBFE",
-      "metadata": {
-        "description": "Load balancer front end IP address name."
-      }
-    },
-    "backendAddressPoolName": {
-      "type": "string",
-      "defaultValue": "LBBE",
-      "metadata": {
-        "description": "Backend address pool name."
-      }
-    },
-    "inboundNatRulesName": {
-      "type": "string",
-      "defaultValue": "adRDP",
-      "metadata": {
-        "description": "Inbound NAT rules name."
-      }
-    },
     "networkInterfaceName": {
       "type": "string",
       "defaultValue": "adNic",
@@ -146,14 +125,6 @@
         "description": "Availability set name."
       }
     },
-    "loadBalancerName": {
-      "type": "string",
-      "defaultValue": "adLoadBalancer",
-      "metadata": {
-        "description": "Load balancer name."
-      }
-    }
-  },
   "resources": [
     {
       "type": "Microsoft.Network/publicIPAddresses",
@@ -181,46 +152,6 @@
       }
     },
     {
-      "type": "Microsoft.Network/loadBalancers",
-      "apiVersion": "2022-07-01",
-      "name": "[parameters('loadBalancerName')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "frontendIPConfigurations": [
-          {
-            "name": "[parameters('loadBalancerFrontEndIPName')]",
-            "properties": {
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
-              }
-            }
-          }
-        ],
-        "backendAddressPools": [
-          {
-            "name": "[parameters('backendAddressPoolName')]"
-          }
-        ],
-        "inboundNatRules": [
-          {
-            "name": "[parameters('inboundNatRulesName')]",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', parameters('loadBalancerName'), parameters('loadBalancerFrontEndIPName'))]"
-              },
-              "protocol": "Tcp",
-              "frontendPort": 3389,
-              "backendPort": 3389,
-              "enableFloatingIP": false
-            }
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
-      ]
-    },
-    {
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2022-07-01",
       "name": "[parameters('networkInterfaceName')]",
@@ -234,23 +165,12 @@
               "privateIPAddress": "[parameters('privateIPAddress')]",
               "subnet": {
                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
-              },
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancerName'), parameters('backendAddressPoolName'))]"
-                }
-              ],
-              "loadBalancerInboundNatRules": [
-                {
-                  "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', parameters('loadBalancerName'), parameters('inboundNatRulesName'))]"
-                }
-              ]
+              }
             }
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName'))]",
         "[resourceId('Microsoft.Resources/deployments', 'VNet')]"
       ]
     },
@@ -275,7 +195,7 @@
           "imageReference": {
             "publisher": "MicrosoftWindowsServer",
             "offer": "WindowsServer",
-            "sku": "2019-Datacenter",
+            "sku": "2025-Datacenter",
             "version": "latest"
           },
           "osDisk": {
@@ -283,7 +203,7 @@
             "caching": "ReadOnly",
             "createOption": "FromImage",
             "managedDisk": {
-              "storageAccountType": "StandardSSD_LRS"
+              "storageAccountType": "Premium_LRS"
             }
           },
           "dataDisks": [
@@ -293,7 +213,7 @@
               "createOption": "Empty",
               "diskSizeGB": 20,
               "managedDisk": {
-                "storageAccountType": "StandardSSD_LRS"
+                "storageAccountType": "Premium_LRS"
               },
               "lun": 0
             }
@@ -309,7 +229,6 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]",
-        "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
       ]
     },
