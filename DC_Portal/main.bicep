@@ -8,8 +8,6 @@ param adminPassword string
 @description('The FQDN of the Active Directory Domain to be created')
 param domainName string
 
-@description('The DNS prefix for the public IP address used by the Load Balancer')
-param dnsPrefix string
 
 @description('Size of the VM for the controller')
 param vmSize string = 'Standard_D2s_v3'
@@ -34,8 +32,8 @@ param virtualNetworkName string = 'adVNET'
 @description('Virtual network address range.')
 param virtualNetworkAddressRange string = '10.0.0.0/16'
 
-@description('Load balancer front end IP address name.')
-param loadBalancerFrontEndIPName string = 'LBFE'
+@description('Windows Server SKU.')
+param WindowsServerSKU string = '2019-Datacenter'
 
 @description('Backend address pool name.')
 param backendAddressPoolName string = 'LBBE'
@@ -61,8 +59,6 @@ param publicIPAddressName string = 'adPublicIP'
 @description('Availability set name.')
 param availabilitySetName string = 'adAvailabiltySet'
 
-@description('Load balancer name.')
-param loadBalancerName string = 'adLoadBalancer'
 
 resource publicIPAddress 'Microsoft.Network/publicIPAddresses@2022-07-01' = {
   name: publicIPAddressName
@@ -99,42 +95,6 @@ module VNet 'nestedtemplates/vnet.bicep' = {
   }
 }
 
-resource loadBalancer 'Microsoft.Network/loadBalancers@2022-07-01' = {
-  name: loadBalancerName
-  location: location
-  properties: {
-    frontendIPConfigurations: [
-      {
-        name: loadBalancerFrontEndIPName
-        properties: {
-          publicIPAddress: {
-            id: publicIPAddress.id
-          }
-        }
-      }
-    ]
-    backendAddressPools: [
-      {
-        name: backendAddressPoolName
-      }
-    ]
-    inboundNatRules: [
-      {
-        name: inboundNatRulesName
-        properties: {
-          frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', loadBalancerName, loadBalancerFrontEndIPName)
-          }
-          protocol: 'Tcp'
-          frontendPort: 3389
-          backendPort: 3389
-          enableFloatingIP: false
-        }
-      }
-    ]
-  }
-}
-
 resource networkInterface 'Microsoft.Network/networkInterfaces@2022-07-01' = {
   name: networkInterfaceName
   location: location
@@ -148,23 +108,12 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2022-07-01' = {
           subnet: {
             id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, subnetName)
           }
-          loadBalancerBackendAddressPools: [
-            {
-              id: resourceId('Microsoft.Network/loadBalancers/backendAddressPools', loadBalancerName, backendAddressPoolName)
-            }
-          ]
-          loadBalancerInboundNatRules: [
-            {
-              id: resourceId('Microsoft.Network/loadBalancers/inboundNatRules', loadBalancerName, inboundNatRulesName)
-            }
-          ]
         }
       }
     ]
   }
   dependsOn: [
     VNet
-    loadBalancer
   ]
 }
 
@@ -187,7 +136,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-08-01' = {
       imageReference: {
         publisher: 'MicrosoftWindowsServer'
         offer: 'WindowsServer'
-        sku: WindowsServerSKU
+        sku: '2019-Datacenter'
         version: 'latest'
       }
       osDisk: {
@@ -219,9 +168,6 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2022-08-01' = {
       ]
     }
   }
-  dependsOn: [
-    loadBalancer
-  ]
 }
 
 resource createADForest 'Microsoft.Compute/virtualMachines/extensions@2022-08-01' = {
